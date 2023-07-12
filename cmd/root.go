@@ -5,10 +5,12 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"encoding/base64"
 	"fmt"
 	"log"
 	"os"
 
+	"github.com/google/uuid"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -19,6 +21,7 @@ var encKeyAes string
 var encKeyPgpPub string
 var encKeyPgpPriv string
 var encKeyPgpPassphrase string
+var secKey string
 var identity string
 var verbose bool
 
@@ -81,6 +84,13 @@ func initConfig() {
 		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
 	}
 
+	if viper.Get("SECKEY") == nil {
+		secKey = genSecKey()
+		viper.Set("SECKEY", secKey)
+	} else {
+		secKey = viper.GetString("SECKEY")
+	}
+
 	if vaultKey != "" {
 		viper.Set("VAULT_KEY", vaultKey)
 	}
@@ -98,7 +108,7 @@ func initConfig() {
 	}
 
 	if encKeyPgpPassphrase != "" {
-		viper.Set("ENC_KEY_PGP_PASSPHRASE", encKeyPgpPassphrase)
+		viper.Set("ENC_KEY_PGP_PASSPHRASE", doEncryptAes(encKeyPgpPassphrase, secKey))
 	}
 
 	if identity != "" {
@@ -113,6 +123,15 @@ func initConfig() {
 		}
 	}
 
+}
+
+func genSecKey() string {
+	uuid := uuid.New()
+	uuidBytes := uuid[:]
+	secKeyBytes := append(uuidBytes)
+	secKey := base64.StdEncoding.EncodeToString(secKeyBytes)
+
+	return secKey
 }
 
 func debug(msg string) {

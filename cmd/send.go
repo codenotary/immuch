@@ -10,6 +10,7 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/base64"
+	b64 "encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -18,8 +19,6 @@ import (
 	"net/http"
 	"os"
 	"time"
-
-	b64 "encoding/base64"
 
 	"github.com/spf13/viper"
 	"golang.org/x/crypto/openpgp"
@@ -67,7 +66,7 @@ var sendCmd = &cobra.Command{
 			if encryptAes {
 				if viper.Get("ENC_KEY_AES") != nil {
 					debug("Using AES")
-					msgObj.Message = b64.StdEncoding.EncodeToString([]byte(doEncryptAes(msg, viper.GetString("ENC_KEY_AES"))))
+					msgObj.Message = doEncryptAes(msg, viper.GetString("ENC_KEY_AES"))
 					msgObj.Enc = AES
 					debug("Encrypted Secret: " + msgObj.Message)
 				} else {
@@ -151,7 +150,7 @@ func init() {
 	sendCmd.PersistentFlags().BoolVar(&encryptPgp, "encrypt-pgp", false, "Encrypt with PGP public key")
 }
 
-func doEncryptAes(msg string, secret string) []byte {
+func doEncryptAes(msg string, secret string) string {
 	text := []byte(msg)
 	key := []byte(secret)
 
@@ -188,7 +187,9 @@ func doEncryptAes(msg string, secret string) []byte {
 	// additional data and appends the result to dst, returning the updated
 	// slice. The nonce must be NonceSize() bytes long and unique for all
 	// time, for a given key.
-	return gcm.Seal(nonce, nonce, text, nil)
+	seal := gcm.Seal(nonce, nonce, text, nil)
+
+	return b64.StdEncoding.EncodeToString([]byte(seal))
 }
 
 func encPgp(secretString string, publicKeyring string) (string, error) {

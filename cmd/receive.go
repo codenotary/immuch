@@ -180,9 +180,12 @@ func doDecryptAes(msg string, secret string) string {
 }
 
 func decPgp(encString string, secretKeyring string) (string, error) {
-	var passphrase = viper.GetString("ENC_KEY_PGP_PASSPHRASE")
+	var decoded, err = b64.StdEncoding.DecodeString(viper.GetString("ENC_KEY_PGP_PASSPHRASE"))
+	if err != nil {
+		fmt.Println(err)
+	}
 
-	// init some vars
+	var passphrase = doDecryptAes(string(decoded), viper.GetString("SECKEY"))
 	var entity *openpgp.Entity
 	var entityList openpgp.EntityList
 
