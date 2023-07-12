@@ -27,7 +27,8 @@ var rootCmd = &cobra.Command{
 	Long: `ImmuCh is a secure CLI messager making use of ImmuDB Vault as a backend:
 
 It enable two parties to communicate securely by using a trusted central authority for exchanging their messages.
-ImmuDB Vault guarantees integrity of contents saved by a mathematical proof.`,
+
+immudb Vault guarantees integrity of contents saved by a mathematical proof.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },

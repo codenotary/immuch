@@ -1,6 +1,6 @@
 # ImmuCh - Immutable Communication Channel Tool
 
-Immuch is a tool written in Golang for secure communication backed by [ImmuDB Vault service](https://vault.immudb.io/). It implements a simple message sending and receiving while guaranteeing tamperproof exchange.
+Immuch is a tool written in Golang for secure communication backed by [immudb Vault service](https://vault.immudb.io/). It implements a simple message sending and receiving while guaranteeing tamperproof exchange.
 
 Message can be sent either in plain text, encrypted with symmetric AES key or making use of PGP public/private key infrastructure.
 
@@ -38,10 +38,11 @@ First you will need to setup your environment based on the encryption chosen. Ru
 ```
 ./immuch -h
 
-ImmuCh is a secure CLI messager making use of ImmuDB Vault as a backend:
+ImmuCh is a secure CLI messager making use of immudb Vault as a backend:
 
 It enable two parties to communicate securely by using a trusted central authority for exchanging their messages.
-ImmuDB Vault guarantees integrity of contents saved by a mathematical proof.
+
+immudb Vault guarantees integrity of contents saved by a mathematical proof.
 
 Usage:
   immuch [command]
