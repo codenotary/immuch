@@ -122,3 +122,7 @@ enc_key_pgp_pub: /home/u/.gnupg/pubkey.asc
 identity: Kristaps
 vault_key: <vault-key-here>
 ```
+
+## How it looks in immudb Vault
+
+![immu-ch](img/ui_data_struct.png)
