@@ -96,6 +96,10 @@ var receiveCmd = &cobra.Command{
 			}
 
 			var lastIdx = len(immuResp.Revisions) - 1
+			if lastIdx < 0 {
+				fmt.Println("nothing to receive. probably there are no messages yet")
+				os.Exit(1)
+			}
 			i, err := strconv.ParseInt(strconv.Itoa(immuResp.Revisions[lastIdx].Document.Vault_md.Ts), 10, 64)
 			if err != nil {
 				panic(err)
@@ -103,6 +107,7 @@ var receiveCmd = &cobra.Command{
 			var msg = ""
 			if immuResp.Revisions[lastIdx].Document.EncType == string(AES) {
 				if viper.Get("ENC_KEY_AES") != nil {
+					debug("Decrypting with AES")
 					var decoded, err = b64.StdEncoding.DecodeString(immuResp.Revisions[lastIdx].Document.Message)
 					if err != nil {
 						fmt.Println(err)
@@ -114,11 +119,17 @@ var receiveCmd = &cobra.Command{
 				}
 			} else if immuResp.Revisions[lastIdx].Document.EncType == string(PGP) {
 				if viper.Get("ENC_KEY_PGP_PRIV") != nil {
-					var decrypted, err = decPgp(immuResp.Revisions[lastIdx].Document.Message, viper.GetString("ENC_KEY_PGP_PRIV"))
-					if err != nil {
-						fmt.Println(err)
+					if viper.Get("ENC_KEY_PGP_PASSPHRASE") != nil {
+						debug("Decrypting with PGP")
+						var decrypted, err = decPgp(immuResp.Revisions[lastIdx].Document.Message, viper.GetString("ENC_KEY_PGP_PRIV"))
+						if err != nil {
+							fmt.Println(err)
+						}
+						msg = decrypted
+					} else {
+						fmt.Println("Passphrase for PGP Private key not set. Aborting.")
+						os.Exit(1)
 					}
-					msg = decrypted
 				} else {
 					fmt.Println("PGP Private key not set. Aborting.")
 					os.Exit(1)
@@ -130,7 +141,7 @@ var receiveCmd = &cobra.Command{
 			var time = time.Unix(i, 0).Format(time.RFC850)
 			fmt.Println(time, "received:", immuResp.Revisions[lastIdx].Document.Author, "--->", msg)
 		} else {
-			fmt.Println("something did not work out..")
+			fmt.Println("something did not work out. probably there are no messages")
 		}
 	},
 }
@@ -143,6 +154,7 @@ func doDecryptAes(msg string, secret string) string {
 	key := []byte(secret)
 	ciphertext := []byte(msg)
 
+	debug("Loading the AES key")
 	c, err := aes.NewCipher(key)
 	if err != nil {
 		fmt.Println(err)
@@ -158,6 +170,7 @@ func doDecryptAes(msg string, secret string) string {
 		fmt.Println(err)
 	}
 
+	debug("Decrypting the message")
 	nonce, ciphertext := ciphertext[:nonceSize], ciphertext[nonceSize:]
 	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
@@ -173,6 +186,7 @@ func decPgp(encString string, secretKeyring string) (string, error) {
 	var entity *openpgp.Entity
 	var entityList openpgp.EntityList
 
+	debug("Loading the private key: " + secretKeyring)
 	// Open the private key file
 	keyringFileBuffer, err := os.Open(secretKeyring)
 	if err != nil {
@@ -185,6 +199,7 @@ func decPgp(encString string, secretKeyring string) (string, error) {
 	}
 	entity = entityList[0]
 
+	debug("Decrypting private key with the provided passphrase")
 	// Get the passphrase and read the private key.
 	// Have not touched the encrypted string yet
 	passphraseByte := []byte(passphrase)
@@ -193,12 +208,14 @@ func decPgp(encString string, secretKeyring string) (string, error) {
 		subkey.PrivateKey.Decrypt(passphraseByte)
 	}
 
+	debug("Decoding base64")
 	// Decode the base64 string
 	dec, err := base64.StdEncoding.DecodeString(encString)
 	if err != nil {
 		return "", err
 	}
 
+	debug("Decrypting the message")
 	// Decrypt it with the contents of the private key
 	md, err := openpgp.ReadMessage(bytes.NewBuffer(dec), entityList, nil, nil)
 	if err != nil {

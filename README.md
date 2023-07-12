@@ -58,6 +58,7 @@ Flags:
       --config string   config file (default is $HOME/.immuch.yaml)
   -h, --help            help for immuch
   -t, --toggle          Help message for toggle
+      --verbose         enable verbose output
 ```
 
 You can start simple by just setting your the API key for Vault

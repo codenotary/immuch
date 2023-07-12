@@ -6,6 +6,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -19,6 +20,7 @@ var encKeyPgpPub string
 var encKeyPgpPriv string
 var encKeyPgpPassphrase string
 var identity string
+var verbose bool
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -50,6 +52,7 @@ func init() {
 	// will be global for your application.
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.immuch.yaml)")
+	rootCmd.PersistentFlags().BoolVar(&verbose, "verbose", false, "enable verbose output")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
@@ -110,4 +113,10 @@ func initConfig() {
 		}
 	}
 
+}
+
+func debug(msg string) {
+	if verbose {
+		log.Println(msg)
+	}
 }

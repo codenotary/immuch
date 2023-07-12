@@ -66,9 +66,10 @@ var sendCmd = &cobra.Command{
 
 			if encryptAes {
 				if viper.Get("ENC_KEY_AES") != nil {
+					debug("Using AES")
 					msgObj.Message = b64.StdEncoding.EncodeToString([]byte(doEncryptAes(msg, viper.GetString("ENC_KEY_AES"))))
 					msgObj.Enc = AES
-					// fmt.Println("Encrypted Secret:", msgObj.Message)
+					debug("Encrypted Secret: " + msgObj.Message)
 				} else {
 					fmt.Println("AES key not set. Aborting.")
 					os.Exit(1)
@@ -76,6 +77,7 @@ var sendCmd = &cobra.Command{
 
 			} else if encryptPgp {
 				if viper.Get("ENC_KEY_PGP_PUB") != nil {
+					debug("Using PGP")
 					var crypt, err = encPgp(msg, viper.GetString("ENC_KEY_PGP_PUB"))
 					if err != nil {
 						fmt.Println("something went wrong", err)
@@ -97,12 +99,14 @@ var sendCmd = &cobra.Command{
 			// initialize http client
 			client := &http.Client{}
 
+			debug("Formatting final object payload")
 			// marshal User to json
 			json, err := json.Marshal(msgObj)
 			if err != nil {
 				panic(err)
 			}
 
+			debug("Sending to Vault")
 			// set the HTTP method, url, and request body
 			req, err := http.NewRequest(http.MethodPut, "https://vault.immudb.io/ics/api/v1/ledger/default/collection/default/document", bytes.NewBuffer(json))
 			if err != nil {
@@ -122,6 +126,13 @@ var sendCmd = &cobra.Command{
 			if resp.StatusCode == 200 {
 				dt := time.Now().Format(time.RFC850)
 				fmt.Println(dt, "sent:", msgObj.Author, "--->", msg)
+			} else {
+				b, err := io.ReadAll(resp.Body)
+				// b, err := ioutil.ReadAll(resp.Body)  Go.1.15 and earlier
+				if err != nil {
+					debug(err.Error())
+				}
+				debug("The message was not delivered: " + string(b))
 			}
 
 		} else {
@@ -144,6 +155,7 @@ func doEncryptAes(msg string, secret string) []byte {
 	text := []byte(msg)
 	key := []byte(secret)
 
+	debug("Generating a new AES cipher with provided key")
 	// generate a new aes cipher using our 32 byte long key
 	c, err := aes.NewCipher(key)
 	// if there are any errors, handle them
@@ -170,6 +182,7 @@ func doEncryptAes(msg string, secret string) []byte {
 		fmt.Println(err)
 	}
 
+	debug("Encrypting the message: " + msg)
 	// here we encrypt our text using the Seal function
 	// Seal encrypts and authenticates plaintext, authenticates the
 	// additional data and appends the result to dst, returning the updated
@@ -179,14 +192,17 @@ func doEncryptAes(msg string, secret string) []byte {
 }
 
 func encPgp(secretString string, publicKeyring string) (string, error) {
+	debug("Reading public key from" + publicKeyring)
 	// Read in public key
 	keyringFileBuffer, _ := os.Open(publicKeyring)
 	defer keyringFileBuffer.Close()
 	entityList, err := openpgp.ReadKeyRing(keyringFileBuffer)
 	if err != nil {
+		debug("Failed reading public key: " + err.Error())
 		return "", err
 	}
 
+	debug("Encrypting message: " + secretString)
 	// encrypt string
 	buf := new(bytes.Buffer)
 	w, err := openpgp.Encrypt(buf, entityList, nil, nil, nil)
@@ -202,6 +218,7 @@ func encPgp(secretString string, publicKeyring string) (string, error) {
 		return "", err
 	}
 
+	debug("Encoding to base64")
 	// Encode to base64
 	bytes, err := ioutil.ReadAll(buf)
 	if err != nil {
@@ -210,7 +227,7 @@ func encPgp(secretString string, publicKeyring string) (string, error) {
 	encStr := base64.StdEncoding.EncodeToString(bytes)
 
 	// Output encrypted/encoded string
-	// log.Println("Encrypted Secret:", encStr)
+	debug("Encrypted Secret: " + encStr)
 
 	return encStr, nil
 }
