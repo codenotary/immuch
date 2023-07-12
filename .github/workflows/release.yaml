@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         # build and publish in parallel: linux/amd64
-        goos: [linux, windows, darwin, darwin]
+        goos: [linux, windows, darwin]
         goarch: [amd64]
     steps:
       - uses: actions/checkout@v2
@@ -22,4 +22,3 @@ jobs:
           goarch: ${{ matrix.goarch }}
           project_path: "./"
           binary_name: "immuch"
-
