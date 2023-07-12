@@ -1,4 +1,4 @@
-name: Release TBB binaries
+name: Release ImmuCh binaries
 
 on:
   release:
