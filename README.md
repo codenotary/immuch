@@ -1,28 +1,28 @@
-# ImmuCh - Immutable Communication Channel Tool
+# immuCh - Immutable Communication Channel Tool
 
-Immuch is a tool written in Golang for secure communication backed by [immudb Vault service](https://vault.immudb.io/). It implements a simple message sending and receiving while guaranteeing tamperproof exchange.
+immuch is a tool written in Golang for secure communication backed by [immudb Vault service](https://vault.immudb.io/). It implements a simple message sending and receiving while guaranteeing tamperproof exchange.
 
-Message can be sent either in plain text, encrypted with symmetric AES key or making use of PGP public/private key infrastructure.
+Message can be sent either in plain text, encrypted with a symmetric AES key, or making use of PGP public/private key infrastructure.
 
 ## What you need to fire it up
 1. Register on [https://vault.immudb.io/](https://vault.immudb.io/) and get your API key
 2. Exchange your API key with the other party
 3. (Optional but recommended) Generate your AES or PGP keys for message encryption
-4. Get the ImmuCh by building ir from source or getting an already compiled binary
+4. Get the immuch by building it from source or getting an already compiled binary
 
 ## Generating keys
-To keep your data secure we encourage to use an additional security layer by using your own encryption keys either AES or PGP.
+To keep your data secure we encourage you to use an additional security layer by using your own encryption keys either AES or PGP.
 
 ### Generating AES key
 AES (Advanced Encryption Standard) is a symmetric block cipher standardized by NIST. It has a fixed data block size of 16 bytes. Its keys can be 128, 192, or 256 bits long.
 
-Given the above the you can start with a key in a length of 16 characters
+Given the above you can start with a key with a length of 16 characters
 ```
 date +%s | sha256sum | base64 | head -c 16 ; echo
 ```
 
 ### Generating a PGP key
-Start with generating a new keypair. You will be asked to protect it with a password
+Start with generating a new key pair. You will be asked to protect it with a password
 ```
 gpg --gen-key
 ```
@@ -33,16 +33,16 @@ gpg --export "Kristaps <kristaps@codenotary.com>" > ~/.gnupg/pubkey.asc
 gpg --export-secret-key "Kristaps <kristaps@codenotary.com>" > ~/.gnupg/private.gpg
 ```
 ## Running it
-First you will need to setup your environment based on the encryption chosen. Running the `setup` command allows you to make up your configuration.
+First, you will need to setup your environment based on the encryption chosen. Running the `setup` command allows you to make up your configuration.
 
 ```
 ./immuch -h
 
-ImmuCh is a secure CLI messager making use of immudb Vault as a backend:
+immuch is a secure CLI messager making use of immudb Vault as a backend:
 
-It enable two parties to communicate securely by using a trusted central authority for exchanging their messages.
+It enables two parties to communicate securely by using a trusted central authority for exchanging their messages.
 
-immudb Vault guarantees integrity of contents saved by a mathematical proof.
+immudb Vault guarantees the integrity of contents saved by mathematical proof.
 
 Usage:
   immuch [command]
@@ -61,7 +61,7 @@ Flags:
       --verbose         enable verbose output
 ```
 
-You can start simple by just setting your the API key for Vault
+You can start simply by just setting your API key for Vault
 ```
 ./immuch setup --vault-key <your-vault-key>
 
@@ -113,7 +113,7 @@ As you can see all the previous messages were sent without any identity. This ca
 ./immuch setup --identity Kristaps
 ```
 
-The configuration in the end would look like this
+The configuration, in the end, would look like this
 ```
 cat ~/.immuch.yaml
 enc_key_aes: ZTg5MGM4NzM1MDFm
@@ -126,4 +126,4 @@ vault_key: <vault-key-here>
 
 ## How it looks in immudb Vault
 
-![immu-ch](img/ui_data_struct.png)
+![immuch](img/ui_data_struct.png)
