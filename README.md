@@ -117,10 +117,11 @@ The configuration, in the end, would look like this
 ```
 cat ~/.immuch.yaml
 enc_key_aes: ZTg5MGM4NzM1MDFm
-enc_key_pgp_passphrase: password123
+enc_key_pgp_passphrase: 3iy6d17qFbFV5h/mUkXtm2Z3s85rfi971N27+0iH68IZNtWWpMIp
 enc_key_pgp_priv: /home/u/.gnupg/private.gpg
 enc_key_pgp_pub: /home/u/.gnupg/pubkey.asc
 identity: Kristaps
+seckey: wnbBJbRkS26L4HHuuzwJLg==
 vault_key: <vault-key-here>
 ```
 
