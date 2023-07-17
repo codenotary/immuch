@@ -6,7 +6,7 @@ Message can be sent either in plain text, encrypted with a symmetric AES key, or
 
 ## What you need to fire it up
 1. Register on [https://vault.immudb.io/](https://vault.immudb.io/) and get your API key
-2. Exchange your API key with the other party
+2. Exchange your *read*  (not the write key!) API key with the other party
 3. (Optional but recommended) Generate your AES or PGP keys for message encryption
 4. Get the immuch by building it from source or getting an already compiled binary
 
